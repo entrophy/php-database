@@ -1,5 +1,5 @@
 <?php
-class ENT_Database {
+class Entrophy_Database {
 	private $config;
 	private $prefix;
 	
@@ -15,7 +15,7 @@ class ENT_Database {
 	private static $instance;
 	public static function getInstance() {
 		if (!self::$instance) {
-			self::$instance = new ENT_Database();
+			self::$instance = new Entrophy_Database();
 		}
 		return self::$instance;	
 	}
@@ -44,11 +44,11 @@ class ENT_Database {
 	}
 	
 	public function eav($table, $entityid) {
-		return new ENT_Database_EAV($this->matchTable($table), $entityid, $this);
+		return new Entrophy_Database_EAV($this->matchTable($table), $entityid, $this);
 	}
 	
 	public function queryBuilder() {
-		return new ENT_Database_QueryBuilder($this);
+		return new Entrophy_Database_QueryBuilder($this);
 	}
 	
 	public function insertID() {

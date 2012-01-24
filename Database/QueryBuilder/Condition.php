@@ -1,5 +1,5 @@
 <?php
-class ENT_Database_QueryBuilder_Condition {
+class Entrophy_Database_QueryBuilder_Condition {
 	private $sql;
 	
 	private $conditions = array();
@@ -7,7 +7,7 @@ class ENT_Database_QueryBuilder_Condition {
 	public function __construct($params) {
 		if (is_array($params)) {
 			foreach ($params as $field => $value) {
-				$field = ENT_Database::getInstance()->field($field);
+				$field = Entrophy_Database::getInstance()->field($field);
 				
 				if (is_numeric($value)) {
 					$this->sql = $field." = $value";

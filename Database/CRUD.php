@@ -1,5 +1,5 @@
 <?php
-class ENT_Database_CRUD {
+class Entrophy_Database_CRUD {
 	private $database;
 	private $queryBuilder;
 

@@ -1,5 +1,5 @@
 <?php
-class ENT_Database_QueryBuilder {
+class Entrophy_Database_QueryBuilder {
 	private $type = "SELECT";
 	protected $table;
 	protected $tableAlias;
@@ -65,7 +65,7 @@ class ENT_Database_QueryBuilder {
 	}
 	
 	public function newCondition($params, $weight = 0) {
-		return new ENT_Database_QueryBuilder_Condition($params, $weight);
+		return new Entrophy_Database_QueryBuilder_Condition($params, $weight);
 	}
 	
 	public function setCondition($condition, $weight = 0, $key = null) {

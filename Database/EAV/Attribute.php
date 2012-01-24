@@ -1,5 +1,5 @@
 <?php
-class ENT_Database_EAV_Attribute {
+class Entrophy_Database_EAV_Attribute {
 	private $key;
 	private $table;
 	private $entity_id;
