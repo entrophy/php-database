@@ -1,5 +1,5 @@
 <?php
-spl_autoload_register(array('Entrophy_Database', 'autoload'));
+spl_autoload_register(array('Entrophy_Database', 'autoload'), true, true);
 class Entrophy_Database {
 	private $config;
 	private $prefix;
