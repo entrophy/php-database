@@ -1,4 +1,5 @@
 <?php
+spl_autoload_register(array('Entrophy_Database', 'autoload'), true, true);
 class Entrophy_Database {
 	private $config;
 	private $prefix;
@@ -19,6 +20,17 @@ class Entrophy_Database {
 		}
 		return self::$instance;	
 	}
+	
+	public static function autoload($class) {
+		if (strpos($class, 'Entrophy_Database_') === 0) {
+			if (class_exists($class, false) || interface_exists($class, false)) {
+				return;
+			}
+		
+			$file = str_replace(array('_', 'Entrophy/'), array('/', ''), $class).'.php';
+			include $file;
+		}
+	}
 
 	private function __construct() {}
 
@@ -28,7 +40,7 @@ class Entrophy_Database {
 	}
 
 	public function init($config) {
-		$this->config = (object) $config;
+		$this->config = is_array($config) ? (object) $config : $config;
 		$this->prefix = $this->config->prefix;
 
 		$this->pdo = new PDO(
@@ -41,6 +53,7 @@ class Entrophy_Database {
 		);
 
 		$this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		unset($this->config);
 	}
 	
 	public function eav($table, $entityid) {
