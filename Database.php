@@ -63,7 +63,7 @@ class Entrophy_Database {
 	public function queryBuilder() {
 		return new Entrophy_Database_QueryBuilder($this);
 	}
-	public function cruid() {
+	public function crud() {
 		return new Entrophy_Database_CRUD($this);
 	}
 	
