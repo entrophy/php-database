@@ -45,7 +45,7 @@ class Entrophy_Database {
 
 		$this->pdo = new PDO(
 			'mysql:host='.$this->config->host.';dbname='.$this->config->database.';',
-			$this->config->username,
+			$this->config->user,
 			$this->config->password,
 			array(
 				PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES '.$this->config->charset
@@ -135,7 +135,7 @@ class Entrophy_Database {
 	}
 	
 	public function execute($type, $showQueryOnError = false) {
-		// ENT_Profiler::startQuery($query);	
+		// Entrophy_Profiler::startQuery($query);	
 			$result = array();
 			try {
 				$this->statement->execute();
@@ -161,7 +161,7 @@ class Entrophy_Database {
 					echo "\r\n\r\n".'QUERY: '.$this->lastQuery;
 				}
 			}
-		// ENT_Profiler::stopQuery();
+		// Entrophy_Profiler::stopQuery();
 		return $result;
 	}
 }
