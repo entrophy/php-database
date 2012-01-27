@@ -63,6 +63,9 @@ class Entrophy_Database {
 	public function queryBuilder() {
 		return new Entrophy_Database_QueryBuilder($this);
 	}
+	public function cruid() {
+		return new Entrophy_Database_CRUD($this);
+	}
 	
 	public function insertID() {
 		return $this->insertID;
@@ -125,6 +128,10 @@ class Entrophy_Database {
 		} else if ($value !== null) {
 			$this->bind(array($data => $value));
 		}
+	}
+	
+	public function query($query) {
+		return $this->pdo->query($query);
 	}
 	
 	public function execute($type, $showQueryOnError = false) {
