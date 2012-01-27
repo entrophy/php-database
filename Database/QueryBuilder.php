@@ -213,7 +213,7 @@ class Entrophy_Database_QueryBuilder {
 						} else if (is_numeric($value)) {
 							$query .= $value;
 						} else {
-							$query .= "'".mysql_real_escape_string(stripslashes($value))."'";
+							$query .= "'".$value."'";
 						}
 
 						if ($x != $count) {
@@ -236,7 +236,7 @@ class Entrophy_Database_QueryBuilder {
 						} elseif (is_numeric($value)) {
 							$query .= $value;
 						} else {
-							$query .= "'".mysql_real_escape_string(stripslashes($value))."'";
+							$query .= "'".$value."'";
 						}
 						
 						if ($x != $count) {
