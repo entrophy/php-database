@@ -1,18 +1,17 @@
 <?php
 class Entrophy_Database_QueryBuilder {
 	private $type = "SELECT";
-	protected $table;
-	protected $tableAlias;
-	protected $fields = '*';
+	private $table;
+	private $tableAlias;
+	private $fields = '*';
 	private $left_joins;
 	private $values;
 	private $conditions;
 	private $params;
-	private $havings;
-	protected $groups;
-	protected $orders;
-	protected $amount;
-	protected $offset = 0;
+	private $groups;
+	private $orders;
+	private $amount;
+	private $offset = 0;
 
 	protected $database;
 	private $query;
@@ -78,24 +77,6 @@ class Entrophy_Database_QueryBuilder {
 	public function removeCondition($key) {
 		$this->conditions[$key] = null;
 		unset($this->conditions[$key]);
-	}
-	
-	public function addHaving($having, $glue = 'AND', $key = null) {
-		if (is_array($having)) {
-			foreach ($having as $field => $value) {
-				$_having = array("$field = 'mysql_real_escape_string($value)'", $glue);
-
-				$key ? $this->havings[$key] = $_having : $this->havings[] = $_having;
-			}
-		} else {
-			$key ? $this->havings[$key] = array($having, $glue) : $this->havings[] = array($having, $glue);
-		}
-		
-		return $this;
-	}
-	public function removeHaving($key) {
-		$this->havings[$key] = null;
-		unset($this->havings[$key]);
 	}
 	
 	public function addGroupBy($group, $key = null) {
