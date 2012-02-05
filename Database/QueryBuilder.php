@@ -135,77 +135,75 @@ class Entrophy_Database_QueryBuilder {
 	}
 	
 	public function buildQuery() {
-		$parts = array();
-		$query = $this->type." ";
+		$query_parts = array($this->type);
 			
 		switch ($this->type) {
 			case "SELECT":
-				if (!is_array($this->fields)) {
-					$this->fields = array($this->fields);
+				if (!is_array($fields = $this->fields)) {
+					$fields = array($fields);
 				}
 
 				if ($this->amount) {
-					$query .= "SQL_CALC_FOUND_ROWS ";
+					$part = 'SQL_CALC_FOUND_ROWS ';
 				}
+				$part .= implode(', ', array_map(array($this, 'escapeName'), $fields));
 				
-				array_walk($this->fields, array($this, '_escapeName'));
-				$query .= implode(", ", $this->fields);
-				
-				$query .= " FROM ";
+				$query_parts[] = $part;
+				unset($part);
 				break;
 			case "CREATE";
 			case "INSERT":
-				$query .= "INTO ";
+				$query_parts[] =  'INTO';
 				break;
 			case "DELETE":
-				$query .= "FROM ";
+				$query_parts[] =  'FROM';
 				break;
 			}
 		
-		if (is_array($this->table)) {
-			array_walk($this->table, array($this, '_escapeName'));
-			$query .= implode(", ", $this->table);
-		} else {
-			$query .= $this->escapeName($this->table);
+		if (!is_array($tables = $this->table)) {
+			$tables = array($tables);
 		}
+		$query_parts[] = implode(', ', array_map(array($this, 'escapeName'), $tables));
+			
 		
 		if ($values = $this->values) {
 			$count = count($values);
 			$x = 1;
 			switch ($this->type) {
-				case "UPDATE":
-					$query .= " SET ";
+				case 'UPDATE':
+					$query_parts[] = 'SET';
 					foreach ($this->values as $key => $value) {
-						$query .= "`".$key."` = ";
+						$part = "`".$key."` = ";
 						
 						if (!$value) {
-							$query .= "''";
+							$part .= "''";
 						} else if (is_numeric($value)) {
-							$query .= $value;
+							$part .= $value;
 						} else {
-							$query .= "'".$value."'";
+							$part .= "'".$value."'";
 						}
 
 						if ($x != $count) {
-							$query .= ", ";
+							$part .= ", ";
 						}
 						
+						$query_parts[] = $part;
+						unset($part);
 						$x++;
 					}
 					break;
-				case "CREATE";
-				case "INSERT":
+				case 'CREATE';
+				case 'INSERT':
 					if (!is_array($values[0])) {
 						$values = array($values);
 					}
 					
 					$keys = array_map(array($this, 'escapeName'), array_keys($values[0])); // escape field names
-					$values = array_map(array($this, 'wrapValues'), $values); // wrap string values in '' and leave numeric be
-				
-					$part = ' ('.implode(', ', $keys).') VALUES ('.implode('), (', $values).')'; // build value statement
-					$query .= $part;
+					$values = array_map(array($this, 'wrapValues'), $values); // wrap string values in '' and leave numeric be			
+					$part = '('.implode(', ', $keys).') VALUES ('.implode('), (', $values).')'; // build value statement
 					
-					$part = null;
+					$query_parts[] = $part;		
+					unset($part);
 					break;
 			}
 			
@@ -217,15 +215,16 @@ class Entrophy_Database_QueryBuilder {
 		if ($count && $this->type != 'INSERT' && $this->type != 'CREATE') {
 			usort($this->conditions, array($this, 'sortConditions'));
 		
-			$query .= " WHERE";
+			$query_parts[] = 'WHERE';
 			foreach ($this->conditions as $condition) {
 				$_conditions = is_array($condition[0]) ? $condition[0] : array($condition[0]);
 
 				foreach ($_conditions as $_condition) {
-					$query .= $x != 1 ? ' AND ' : ' ';
+					$part = $x != 1 ? ' AND ' : ' ';
 
-					$query .= is_object($_condition) ? "(".$_condition->getSql().")" : "(".$_condition.")";
-					
+					$part .= is_object($_condition) ? "(".$_condition->getSql().")" : "(".$_condition.")";
+					$query_parts[] = $part;
+					unset($part);
 					$x++;
 				}
 			}
@@ -233,25 +232,28 @@ class Entrophy_Database_QueryBuilder {
 
 		if (is_array($this->orders) && ($count = count($this->orders))) {
 			$x = 1;
-			$query .= ' ORDER BY ';
+			$query_parts[] = 'ORDER BY';
 
 			foreach ($this->orders as $order) {
-				$query .= $x != $count ? $order[0].' '.strtoupper($order[1]).', ' : $order[0].' '.strtoupper($order[1]);
+				$query_parts[] $x != $count ? $order[0].' '.strtoupper($order[1]).', ' : $order[0].' '.strtoupper($order[1]);
 
 				$x++;
 			}
 		}
 		
 		if ($this->amount) {
-			$query .= ' LIMIT '.$this->amount;
+			$query_parts[] = 'LIMIT '.$this->amount;
 		}
 
 		if ($this->offset) {
-			$query .= ' OFFSET '.$this->offset;
+			$query_parts[] = 'OFFSET '.$this->offset;
 		}
 		
-		$query;
-
+		$query = implode(' ', $query_parts);
+		
+		print_r($query_parts);
+		unset($query_parts);
+		echo $query;
 		return $query;
 	}
 	
