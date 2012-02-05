@@ -2,9 +2,7 @@
 class Entrophy_Database_QueryBuilder {
 	private $type = "SELECT";
 	private $table;
-	private $tableAlias;
 	private $fields = '*';
-	private $left_joins;
 	private $values;
 	private $conditions;
 	private $params;
@@ -26,11 +24,6 @@ class Entrophy_Database_QueryBuilder {
 	public function setTable($table, $alias = null) {
 		$this->table = $table;
 		$this->tableAlias = $alias;
-		return $this;
-	}
-	
-	public function addLeftJoin($table, $condition) {
-		$this->left_joins[] = array($table, $condition);
 		return $this;
 	}
 	
@@ -142,6 +135,7 @@ class Entrophy_Database_QueryBuilder {
 	}
 	
 	public function buildQuery() {
+		$parts = array();
 		$query = $this->type." ";
 			
 		switch ($this->type) {
@@ -173,15 +167,6 @@ class Entrophy_Database_QueryBuilder {
 			$query .= implode(", ", $this->table);
 		} else {
 			$query .= $this->escapeName($this->table);
-			if ($this->tableAlias) {
-				$query .= " ".$this->tableAlias;
-			}
-		}
-		
-		if (is_array($this->left_joins) && count($this->left_joins) && $this->type == "SELECT") {
-			foreach ($this->left_joins as $left_join) {
-				$query .= " LEFT JOIN `".$left_join[0]."` ON ".$left_join[1];
-			}
 		}
 		
 		if ($values = $this->values) {
@@ -278,8 +263,6 @@ class Entrophy_Database_QueryBuilder {
 		$this->type = "SELECT";
 		$this->table = null;
 		$this->fields = '*';
-		$this->tableAlias = null;
-		$this->left_joins = array();
 		$this->conditions = array();
 		$this->params = array();
 		$this->amount = null;
