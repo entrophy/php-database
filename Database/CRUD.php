@@ -45,8 +45,6 @@ class Entrophy_Database_CRUD {
 		$this->qb->values($values);
 
 		$result = $this->qb->execute();
-		$this->qb->clear();
-
 		return $result;
 	}
 
