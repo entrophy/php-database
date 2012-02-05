@@ -114,6 +114,13 @@ class Entrophy_Database {
 		$name = $this->field($name);
 	}
 	
+	public function wrapValue($value) {
+		if (!is_numeric($value)) {
+			$value = "'".$value."'";
+		}
+		return $value;
+	}
+	
 	public function prepare($query) {
 		$this->statement = $this->pdo->prepare($query);
 		

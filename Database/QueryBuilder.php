@@ -13,7 +13,7 @@ class Entrophy_Database_QueryBuilder {
 	private $amount;
 	private $offset = 0;
 
-	protected $database;
+	private $database;
 	private $query;
 	
 	public function __construct($database) {
@@ -125,6 +125,15 @@ class Entrophy_Database_QueryBuilder {
 	private function _escapeName(&$name) {
 		$name = $this->escapeName($name);
 	}
+	private function wrapValue($value) {
+		return $this->database->wrapValue($value);
+	}
+	private function _wrapValue(&$value) {
+		$value = $this->escapeName($value);
+	}
+	private function wrapValues($values) {
+		return implode(', ', array_map(array($this, 'wrapValue'), $values));
+	}
 	
 	private function sortConditions($a, $b) {
 		$a = $a[1];
@@ -180,8 +189,8 @@ class Entrophy_Database_QueryBuilder {
 			}
 		}
 		
-		if ($this->values) {
-			$count = count($this->values);
+		if ($values = $this->values) {
+			$count = count($values);
 			$x = 1;
 			switch ($this->type) {
 				case "UPDATE":
@@ -206,30 +215,20 @@ class Entrophy_Database_QueryBuilder {
 					break;
 				case "CREATE";
 				case "INSERT":
-					$keys = array_keys($this->values);
-					array_walk($keys, array($this, '_escapeName'));
+					if (!is_array($values[0])) {
+						$values = array($values);
+					}	
+					$keys = array_map(array($this, 'escapeName'), array_keys($values[0]));
+					$values = array_map(array($this, 'wrapValues'), $values);
 				
-					$query .= ' ('.implode(', ', $keys).') VALUES (';
+					$part = ' ('.implode(', ', $keys).') VALUES ('.implode('), (', $values).')';
+					$query .= $part;
 					
-					foreach ($this->values as $key => $value) {
-						if (!$value) {
-							$query .= "''";
-						} elseif (is_numeric($value)) {
-							$query .= $value;
-						} else {
-							$query .= "'".$value."'";
-						}
-						
-						if ($x != $count) {
-							$query .= ", ";
-						}
-						
-						$x++;
-					}
-					
-					$query .= ")";
+					$part = null;
 					break;
 			}
+			
+			unset($values);
 		}
 		
 		$count = count($this->conditions);

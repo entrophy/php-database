@@ -1,11 +1,11 @@
 <?php
 class Entrophy_Database_CRUD {
 	private $database;
-	private $queryBuilder;
+	private $qb;
 
 	public function __construct($database) {
 		$this->database = $database;
-		$this->queryBuilder = $this->database->queryBuilder();
+		$this->qb = $this->database->queryBuilder();
 	}
 	
 	public function cou($table, $data, $where) {
@@ -21,11 +21,11 @@ class Entrophy_Database_CRUD {
 	public function create($table, $values) {
 		$table = $this->database->matchTable($table);
 		
-		$this->queryBuilder->setType('INSERT');
-		$this->queryBuilder->setTable($table);
-		$this->queryBuilder->setValues($values);
+		$this->qb->setType('INSERT');
+		$this->qb->setTable($table);
+		$this->qb->setValues($values);
 
-		$result = $this->queryBuilder->execute();
+		$result = $this->qb->execute();
 
 		return $result;
 	}
@@ -33,16 +33,16 @@ class Entrophy_Database_CRUD {
 	public function read($table, $fields, $additional = null) {
 		$table = $this->database->matchTable($table);
 
-		$this->queryBuilder->setType('SELECT');
-		$this->queryBuilder->setTable($table);
+		$this->qb->setType('SELECT');
+		$this->qb->setTable($table);
 
-		$query = $this->queryBuilder->buildQuery();
+		$query = $this->qb->buildQuery();
 
 		if ($additional) {
 			$query .= ' '.$additional;
 		}
 
-		$result = $this->queryBuilder->execute('SELECT', $query);
+		$result = $this->qb->execute('SELECT', $query);
 
 		return $result;
 	}
@@ -50,28 +50,28 @@ class Entrophy_Database_CRUD {
 	public function update($table, $data, $where) {
 		$table = $this->database->matchTable($table);
 
-		$this->queryBuilder->setType('UPDATE');
-		$this->queryBuilder->setTable($table);
-		$this->queryBuilder->setValues($data);
+		$this->qb->setType('UPDATE');
+		$this->qb->setTable($table);
+		$this->qb->setValues($data);
 
-		$query = $this->queryBuilder->buildQuery();
+		$query = $this->qb->buildQuery();
 		$query .= ' WHERE '.$where;
 
-		$result = $this->queryBuilder->execute('UPDATE', $query);
+		$result = $this->qb->execute('UPDATE', $query);
 
 		return $result;
 	}
 
 	public function delete($table, $where) {
-		$table = $this->database->matchTable($table);
+		$table = $this->qb->matchTable($table);
 			
-		$this->queryBuilder->setType('DELETE');
-		$this->queryBuilder->setTable($table);
+		$this->qb->setType('DELETE');
+		$this->qb->setTable($table);
 
-		$query = $this->queryBuilder->buildQuery();
+		$query = $this->qb->buildQuery();
 		$query .= ' WHERE '.$where;
 
-		$result = $this->queryBuilder->execute('DELETE', $query);
+		$result = $this->qb->execute('DELETE', $query);
 
 		return $result;
 	}
