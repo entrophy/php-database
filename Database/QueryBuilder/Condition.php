@@ -4,20 +4,28 @@ class Entrophy_Database_QueryBuilder_Condition {
 	
 	private $conditions = array();
 	
-	public function __construct($params) {
+	public function __construct($params, $remap = true, $qb) {
+		$db = Entrophy_Database::getInstance();
+		
 		if (is_array($params)) {
-			foreach ($params as $field => $value) {
-				$field = Entrophy_Database::getInstance()->field($field);
-				
-				if (is_numeric($value)) {
-					$this->sql = $field." = $value";
-				} else {
-					$this->sql = $field." = '$value'";
+			$parts = array();
+			foreach ($params as $field => $value) {				
+				if ($remap && $value != ':'.$field) {
+					$qb->bindParam($field, $value);
+					$value = ':'.$field;
+				} elseif ($value != ':'.$field) {
+					$value = $db->wrapValue($value);
 				}
+				
+				$field = $db->field($field);
+				$parts[] = $field." = $value";
 			}
+			$this->sql = implode(' AND ', $parts);
 		} else {
 			$this->sql = $params;
 		}
+		
+		unset($qb, $db);
 	}
 	
 	public function getSql() {

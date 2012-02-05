@@ -69,24 +69,33 @@ class Entrophy_Database_QueryBuilder {
 		return $this;
 	}
 	
-	public function newCondition($params, $weight = 0) {
-		return new Entrophy_Database_QueryBuilder_Condition($params, $weight);
+	public function newCondition($params, $remap = true) {
+		return new Entrophy_Database_QueryBuilder_Condition($params, $remap, $this);
 	}
 	
 	public function setCondition($condition, $weight = 0, $key = null) {
-		$condition = is_object($condition) || is_array($condition) ? $condition : $this->newCondition($condition, $weight);
-
-		$key ? $this->conditions[$key] = array($condition, $weight) : $this->conditions[] = array($condition, $weight);
+		// if $condition is not a condition object or an array of condition objects, create new condition object
+		if (!is_object($condition) && !(is_array($condition) && is_object($condition[0]))) {
+			$condition = $this->newCondition($condition);
+		}
+		
+		$condition = array($condition, $weight);
+		if ($key) {
+			$this->conditions[$key] = $condition;
+		} else {
+			$this->conditions[] = $condition;
+		}
 		
 		return $this;
 	}
+	
 	public function removeCondition($key) {
 		$this->conditions[$key] = null;
 		unset($this->conditions[$key]);
 		return $this;
 	}
 
-	public function addOrder($name, $dir = 'asc', $key = null) {
+	public function addOrder($name, $dir = 'asc', $key = null) {	
 		$order = (object) array('name' => $name, 'dir' => $dir);
 		if ($key) {
 			$this->orders[$key] = $order;
@@ -123,12 +132,13 @@ class Entrophy_Database_QueryBuilder {
 			unset($name, $dir, $i);
 		}
 		unset($args);
+		
+		return $this;
 	}
 
 	public function bindParam($data, $value = null) {
 		if (is_array($data)) {
-			foreach ($data as $key => $value) {
-				
+			foreach ($data as $key => $value) {			
 				$this->params[$key[0] === ':' ? $key : ':'.$key] = $value;
 			}
 		} else if ($value !== null) {
@@ -262,24 +272,18 @@ class Entrophy_Database_QueryBuilder {
 			unset($values);
 		}
 		
-		$count = count($this->conditions);
-		$x = 1;
-		if ($count && $this->type != 'INSERT' && $this->type != 'CREATE') {
-			usort($this->conditions, array($this, 'sortConditions'));
-		
+		if (count($conditions = $this->conditions) && $this->type != 'INSERT' && $this->type != 'CREATE') {
+			usort($conditions, array($this, 'sortConditions'));
+			$conditions = array_map(function ($condition) {
+				return is_array($condition[0]) ? $condition[0] : array($condition[0]);
+			}, $conditions);
+			
 			$query_parts[] = 'WHERE';
-			foreach ($this->conditions as $condition) {
-				$_conditions = is_array($condition[0]) ? $condition[0] : array($condition[0]);
-
-				foreach ($_conditions as $_condition) {
-					$part = $x != 1 ? ' AND ' : ' ';
-
-					$part .= is_object($_condition) ? "(".$_condition->getSql().")" : "(".$_condition.")";
-					$query_parts[] = $part;
-					unset($part);
-					$x++;
-				}
+		
+			foreach ($conditions as $condition_set) {			
+				$query_parts[] = '('.implode(') AND (', $condition_set).')';
 			}
+			unset($conditions);
 		}
 
 		if (is_array($orders = $this->orders) && count($orders)) {
@@ -288,6 +292,7 @@ class Entrophy_Database_QueryBuilder {
 			$query_parts[] = implode(', ', array_map(function ($order) use ($db) {
 				return $db->field($order->name).' '.strtoupper($order->dir);
 			}, $orders));
+			unset($orders);
 		}
 		
 		if ($this->amount) {
@@ -330,7 +335,6 @@ class Entrophy_Database_QueryBuilder {
 		$this->database->bind($this->params);
 		
 		$result = $this->database->execute($this->type, true);
-
 		$this->clear();
 
 		return $result;

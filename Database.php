@@ -155,7 +155,7 @@ class Entrophy_Database {
 				$this->insertID = $this->pdo->lastInsertID();
 
 				$result = ($type == 'SELECT') ? $this->statement->fetchAll(PDO::FETCH_ASSOC) : array();
-
+				
 				if (strstr($this->lastQuery, 'LIMIT')) {
 					$_statement = $this->pdo->prepare('SELECT FOUND_ROWS() as rows');
 					$_statement->execute();
