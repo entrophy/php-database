@@ -261,19 +261,6 @@ class Entrophy_Database_QueryBuilder {
 				$x++;
 			}
 		}
-		
-		if (is_array($this->havings) && ($count = count($this->havings)) && $this->type != 'INSERT' && $this->type != 'CREATE') {
-			$query .= " HAVING ";
-			$x = 1;
-			foreach ($this->havings as $having) {
-				if ($x != 1) {
-					$query .= $having[1]." ";
-				}
-				$query .= "(".$having[0].")";
-				
-				$x++;
-			}
-		}
 
 		if (is_array($this->orders) && ($count = count($this->orders))) {
 			$x = 1;

@@ -18,12 +18,12 @@ class Entrophy_Database_CRUD {
 		}
 	}
 
-	public function create($table, $data) {
+	public function create($table, $values) {
 		$table = $this->database->matchTable($table);
 		
 		$this->queryBuilder->setType('INSERT');
 		$this->queryBuilder->setTable($table);
-		$this->queryBuilder->setValues($data);
+		$this->queryBuilder->setValues($values);
 
 		$result = $this->queryBuilder->execute();
 
