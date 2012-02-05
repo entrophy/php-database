@@ -6,7 +6,7 @@ class Entrophy_Database_QueryBuilder {
 	private $values;
 	private $conditions;
 	private $params;
-	private $orders;
+	private $orders = array();
 	private $amount;
 	private $offset = 0;
 
@@ -86,8 +86,14 @@ class Entrophy_Database_QueryBuilder {
 		return $this;
 	}
 
-	public function addOrder($order, $dir = 'asc', $key = null) {
-		$key ? $this->orders[$key] = array($order, $dir) : $this->orders[] = array($order, $dir);
+	public function addOrder($name, $dir = 'asc', $key = null) {
+		$order = (object) array('name' => $name, 'dir' => $dir);
+		if ($key) {
+			$this->orders[$key] = $order;
+		} else {
+			$this->orders[] = $order;
+		}
+		unset($order);
 		return $this;
 	}
 	public function removeOrder($key) {
@@ -96,7 +102,27 @@ class Entrophy_Database_QueryBuilder {
 		return $this;
 	}
 	public function order() {
-		print_r(func_get_args());
+		$args = func_get_args();
+		if (is_array($args[0])) {
+			foreach ($args as $arg) {
+				$this->addOrder($arg[0], $arg[1], $arg[0]);
+			}
+		} else {
+			$i = 0;
+			foreach ($args as $arg) {
+				if (($i % 2) === 0) {
+					$name = $arg;
+				} else {
+					$dir = $arg;
+					$this->addOrder($name, $dir, $name);
+				}
+				
+				$i++;
+				unset($arg);
+			}
+			unset($name, $dir, $i);
+		}
+		unset($args);
 	}
 
 	public function bindParam($data, $value = null) {
@@ -160,6 +186,7 @@ class Entrophy_Database_QueryBuilder {
 	
 	public function buildQuery() {
 		$query_parts = array($this->type);
+		$db = $this->database;
 			
 		switch ($this->type) {
 			case "SELECT":
@@ -255,15 +282,12 @@ class Entrophy_Database_QueryBuilder {
 			}
 		}
 
-		if (is_array($this->orders) && ($count = count($this->orders))) {
-			$x = 1;
+		if (is_array($orders = $this->orders) && count($orders)) {
 			$query_parts[] = 'ORDER BY';
-
-			foreach ($this->orders as $order) {
-				$query_parts[] = $x != $count ? $order[0].' '.strtoupper($order[1]).', ' : $order[0].' '.strtoupper($order[1]);
-
-				$x++;
-			}
+			
+			$query_parts[] = implode(', ', array_map(function ($order) use ($db) {
+				return $db->field($order->name).' '.strtoupper($order->dir);
+			}, $orders));
 		}
 		
 		if ($this->amount) {
@@ -275,6 +299,8 @@ class Entrophy_Database_QueryBuilder {
 		}
 		
 		$query = implode(' ', $query_parts);
+		unset($query_parts);
+		unset($db);
 		return $query;
 	}
 	
