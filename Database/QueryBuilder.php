@@ -235,7 +235,7 @@ class Entrophy_Database_QueryBuilder {
 			$query_parts[] = 'ORDER BY';
 
 			foreach ($this->orders as $order) {
-				$query_parts[] $x != $count ? $order[0].' '.strtoupper($order[1]).', ' : $order[0].' '.strtoupper($order[1]);
+				$query_parts[] = $x != $count ? $order[0].' '.strtoupper($order[1]).', ' : $order[0].' '.strtoupper($order[1]);
 
 				$x++;
 			}
