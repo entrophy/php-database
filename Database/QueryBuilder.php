@@ -250,10 +250,7 @@ class Entrophy_Database_QueryBuilder {
 		}
 		
 		$query = implode(' ', $query_parts);
-		
-		print_r($query_parts);
-		unset($query_parts);
-		echo $query;
+	
 		return $query;
 	}
 	
