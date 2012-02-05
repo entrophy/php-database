@@ -21,10 +21,19 @@ class Entrophy_Database_QueryBuilder {
 		$this->type = strtoupper($type);
 		return $this;
 	}
-	public function setTable($table, $alias = null) {
+	public function type($type) {
+		return $this->setType($type);
+	}
+	
+	public function setTable($table) {
 		$this->table = $table;
-		$this->tableAlias = $alias;
 		return $this;
+	}
+	public function table($table) {
+		return $this->setTable($table);
+	}
+	public function from($table) {
+		return $this->setTable($table);
 	}
 	
 	public function resetFields() {
@@ -38,6 +47,9 @@ class Entrophy_Database_QueryBuilder {
 			$this->fields = $fields;
 		}
 		return $this;
+	}
+	public function fields($fields) {
+		return $this->setFields($fields);
 	}
 	
 	public function addField($field) {
@@ -83,6 +95,9 @@ class Entrophy_Database_QueryBuilder {
 		unset($this->orders[$key]);
 		return $this;
 	}
+	public function order() {
+		print_r(func_get_args());
+	}
 
 	public function bindParam($data, $value = null) {
 		if (is_array($data)) {
@@ -99,12 +114,21 @@ class Entrophy_Database_QueryBuilder {
 		$this->amount = $amount;
 		return $this;
 	}
+	public function amount($amount) {
+		return $this->setAmount($amount);
+	}
 	public function setLimit($limit) {
+		return $this->setAmount($limit);
+	}
+	public function limit($limit) {
 		return $this->setAmount($limit);
 	}
 	public function setOffset($offset) {
 		$this->offset = $offset;
 		return $this;
+	}
+	public function offset($offset) {
+		return $this->setOffset($offset);
 	}
 	
 	private function escapeName($name) {
@@ -149,14 +173,15 @@ class Entrophy_Database_QueryBuilder {
 				$part .= implode(', ', array_map(array($this, 'escapeName'), $fields));
 				
 				$query_parts[] = $part;
+				$query_parts[] = 'FROM';
 				unset($part);
 				break;
 			case "CREATE";
 			case "INSERT":
-				$query_parts[] =  'INTO';
+				$query_parts[] = 'INTO';
 				break;
 			case "DELETE":
-				$query_parts[] =  'FROM';
+				$query_parts[] = 'FROM';
 				break;
 			}
 		
@@ -250,7 +275,6 @@ class Entrophy_Database_QueryBuilder {
 		}
 		
 		$query = implode(' ', $query_parts);
-	
 		return $query;
 	}
 	
