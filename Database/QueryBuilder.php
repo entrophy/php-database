@@ -8,7 +8,6 @@ class Entrophy_Database_QueryBuilder {
 	private $values;
 	private $conditions;
 	private $params;
-	private $groups;
 	private $orders;
 	private $amount;
 	private $offset = 0;
@@ -77,15 +76,6 @@ class Entrophy_Database_QueryBuilder {
 	public function removeCondition($key) {
 		$this->conditions[$key] = null;
 		unset($this->conditions[$key]);
-	}
-	
-	public function addGroupBy($group, $key = null) {
-		$key ? $this->groups[$key] = array($group) : $this->groups[] = array($group);
-		return $this;
-	}
-	public function removeGroupBy($key) {
-		$this->groups[$key] = null;
-		unset($this->groups[$key]);
 	}
 
 	public function addOrder($order, $dir = 'asc', $key = null) {
@@ -217,11 +207,12 @@ class Entrophy_Database_QueryBuilder {
 				case "INSERT":
 					if (!is_array($values[0])) {
 						$values = array($values);
-					}	
-					$keys = array_map(array($this, 'escapeName'), array_keys($values[0]));
-					$values = array_map(array($this, 'wrapValues'), $values);
+					}
+					
+					$keys = array_map(array($this, 'escapeName'), array_keys($values[0])); // escape field names
+					$values = array_map(array($this, 'wrapValues'), $values); // wrap string values in '' and leave numeric be
 				
-					$part = ' ('.implode(', ', $keys).') VALUES ('.implode('), (', $values).')';
+					$part = ' ('.implode(', ', $keys).') VALUES ('.implode('), (', $values).')'; // build value statement
 					$query .= $part;
 					
 					$part = null;
@@ -247,17 +238,6 @@ class Entrophy_Database_QueryBuilder {
 					
 					$x++;
 				}
-			}
-		}
-
-		if (is_array($this->groups) && ($count = count($this->groups))) {
-			$x = 1;
-			$query .= ' GROUP BY ';
-
-			foreach ($this->groups as $group) {
-				$query .= $x != $count ? $group[0].', ' : $group[0];
-
-				$x++;
 			}
 		}
 
@@ -297,12 +277,10 @@ class Entrophy_Database_QueryBuilder {
 		$this->left_joins = array();
 		$this->conditions = array();
 		$this->params = array();
-		$this->havings = array();
 		$this->amount = null;
 		$this->offset = 0;
 		$this->orders = array();
 		$this->values = array();
-		$this->groups = null;
 	}
 	
 	public function execute($type = null, $query = null, $params = null) {
