@@ -180,7 +180,7 @@ class Entrophy_Database_QueryBuilder {
 		return $this->database->wrapValue($value);
 	}
 	private function _wrapValue(&$value) {
-		$value = $this->escapeName($value);
+		$value = $this->wrapValue($value);
 	}
 	private function wrapValues($values) {
 		return implode(', ', array_map(array($this, 'wrapValue'), $values));
