@@ -68,6 +68,9 @@ class Entrophy_Database_QueryBuilder {
 		$this->values = $values;
 		return $this;
 	}
+	public function values($values) {
+		return $this->setValues($values);
+	}
 	
 	public function newCondition($params, $remap = true) {
 		return new Entrophy_Database_QueryBuilder_Condition($params, $remap, $this);
@@ -234,25 +237,12 @@ class Entrophy_Database_QueryBuilder {
 			switch ($this->type) {
 				case 'UPDATE':
 					$query_parts[] = 'SET';
-					foreach ($this->values as $key => $value) {
-						$part = "`".$key."` = ";
-						
-						if (!$value) {
-							$part .= "''";
-						} else if (is_numeric($value)) {
-							$part .= $value;
-						} else {
-							$part .= "'".$value."'";
-						}
-
-						if ($x != $count) {
-							$part .= ", ";
-						}
-						
-						$query_parts[] = $part;
-						unset($part);
-						$x++;
-					}
+					array_walk($values, function (&$value, $key) use ($db) {
+						$value = $db->field($key).' = '.$db->wrapValue($value);
+					});
+					
+					$query_parts[] = implode(', ', $values);
+					unset($values);
 					break;
 				case 'CREATE';
 				case 'INSERT':
