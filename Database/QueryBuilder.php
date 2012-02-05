@@ -31,10 +31,12 @@ class Entrophy_Database_QueryBuilder {
 	
 	public function addLeftJoin($table, $condition) {
 		$this->left_joins[] = array($table, $condition);
+		return $this;
 	}
 	
 	public function resetFields() {
 		$this->fields = '';
+		return $this;
 	}
 	public function setFields($fields) {
 		if (is_string($fields)) {
@@ -76,14 +78,17 @@ class Entrophy_Database_QueryBuilder {
 	public function removeCondition($key) {
 		$this->conditions[$key] = null;
 		unset($this->conditions[$key]);
+		return $this;
 	}
 
 	public function addOrder($order, $dir = 'asc', $key = null) {
 		$key ? $this->orders[$key] = array($order, $dir) : $this->orders[] = array($order, $dir);
+		return $this;
 	}
 	public function removeOrder($key) {
 		$this->orders[$key] = null;
 		unset($this->orders[$key]);
+		return $this;
 	}
 
 	public function bindParam($data, $value = null) {
@@ -281,6 +286,7 @@ class Entrophy_Database_QueryBuilder {
 		$this->offset = 0;
 		$this->orders = array();
 		$this->values = array();
+		return $this;
 	}
 	
 	public function execute($type = null, $query = null, $params = null) {
