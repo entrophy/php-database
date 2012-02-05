@@ -92,6 +92,10 @@ class Entrophy_Database_QueryBuilder {
 		return $this;
 	}
 	
+	public function where($params) {
+		return $this->setCondition($params);
+	}
+	
 	public function removeCondition($key) {
 		$this->conditions[$key] = null;
 		unset($this->conditions[$key]);
@@ -304,7 +308,7 @@ class Entrophy_Database_QueryBuilder {
 		return $this->query;
 	}
 
-	private function clear() {
+	public function clear() {
 		$this->type = "SELECT";
 		$this->table = null;
 		$this->fields = '*';
