@@ -2,9 +2,17 @@
 class Entrophy_Database_CRUD {
 	private $database;
 	private $qb;
+	
+	private static $instance;
+	public static function getInstance() {
+		if (!self::$instance) {
+			self::$instance = new Entrophy_Database_CRUD();
+		}
+		return self::$instance;	
+	}
 
-	public function __construct($database) {
-		$this->database = $database;
+	public function __construct() {
+		$this->database = Entrophy_Database::getInstance();
 		$this->qb = $this->database->queryBuilder();
 	}
 	

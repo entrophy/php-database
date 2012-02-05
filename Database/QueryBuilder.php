@@ -264,6 +264,7 @@ class Entrophy_Database_QueryBuilder {
 		
 		if (count($conditions = $this->conditions) && $this->type != 'INSERT' && $this->type != 'CREATE') {
 			usort($conditions, array($this, 'sortConditions'));
+			// turn conditions array into a forced nested array to support array of conditions in setCondition()
 			$conditions = array_map(function ($condition) {
 				return is_array($condition[0]) ? $condition[0] : array($condition[0]);
 			}, $conditions);
