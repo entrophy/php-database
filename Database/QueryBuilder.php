@@ -243,9 +243,13 @@ class Entrophy_Database_QueryBuilder {
 			switch ($this->type) {
 				case 'UPDATE':
 					$query_parts[] = 'SET';
+
+					$this->bindParam($values);
+					
 					array_walk($values, function (&$value, $key) use ($db) {
-						$value = $db->field($key).' = '.$db->wrapValue($value);
+						$value = $db->field($key).' = :'.$key;
 					});
+
 					
 					$query_parts[] = implode(', ', $values);
 					unset($values);
@@ -280,7 +284,7 @@ class Entrophy_Database_QueryBuilder {
 			
 			$query_parts[] = 'WHERE';
 		
-			foreach ($conditions as $condition_set) {			
+			foreach ($conditions as $condition_set) {
 				$query_parts[] = '('.implode(') AND (', $condition_set).')';
 			}
 			unset($conditions);
