@@ -64,7 +64,7 @@ class Entrophy_Database {
 		
 		if ($this->config->read || $this->config->{'read-replicas'}) {
 			$read = $this->config->read ? : $this->config->{'read-replicas'};
-			if (is_array($read[0])) {
+			if (is_array($read[0]) || is_object($read[0])) {
 				$read = $read[array_rand($read)];
 			}
 			$read = (object) $read;
