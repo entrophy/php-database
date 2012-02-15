@@ -180,6 +180,7 @@ class Entrophy_Database_QueryBuilder {
 	private function _escapeName(&$name) {
 		$name = $this->escapeName($name);
 	}
+	/*
 	private function wrapValue($value) {
 		return $this->database->wrapValue($value);
 	}
@@ -189,6 +190,7 @@ class Entrophy_Database_QueryBuilder {
 	private function wrapValues($values) {
 		return implode(', ', array_map(array($this, 'wrapValue'), $values));
 	}
+	*/
 	
 	private function sortConditions($a, $b) {
 		$a = $a[1];
@@ -241,9 +243,13 @@ class Entrophy_Database_QueryBuilder {
 			switch ($this->type) {
 				case 'UPDATE':
 					$query_parts[] = 'SET';
+
+					$this->bindParam($values);
+					
 					array_walk($values, function (&$value, $key) use ($db) {
-						$value = $db->field($key).' = '.$db->wrapValue($value);
+						$value = $db->field($key).' = :'.$key;
 					});
+
 					
 					$query_parts[] = implode(', ', $values);
 					unset($values);
@@ -255,8 +261,11 @@ class Entrophy_Database_QueryBuilder {
 					}
 					
 					$keys = array_map(array($this, 'escapeName'), array_keys($values[0])); // escape field names
-					$values = array_map(array($this, 'wrapValues'), $values); // wrap string values in '' and leave numeric be			
-					$part = '('.implode(', ', $keys).') VALUES ('.implode('), (', $values).')'; // build value statement
+					$binds = array_map(function($bind) { return ':'.$bind; }, array_keys($values[0]));
+					
+					$this->bindParam($values[0]);
+					
+					$part = '('.implode(', ', $keys).') VALUES ('.implode(', ', $binds).')'; // build value statement
 					
 					$query_parts[] = $part;		
 					unset($part);
@@ -275,7 +284,7 @@ class Entrophy_Database_QueryBuilder {
 			
 			$query_parts[] = 'WHERE';
 		
-			foreach ($conditions as $condition_set) {			
+			foreach ($conditions as $condition_set) {
 				$query_parts[] = '('.implode(') AND (', $condition_set).')';
 			}
 			unset($conditions);

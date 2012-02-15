@@ -145,13 +145,15 @@ class Entrophy_Database {
 	public function _field(&$name) {
 		$name = $this->field($name);
 	}
-	
+
+	/*
 	public function wrapValue($value) {
 		if (!is_numeric($value)) {
 			$value = "'".$value."'";
 		}
 		return $value;
 	}
+	*/
 	
 	public function getType($param) {;
 		if ($param == 'read' || $param == 'SELECT' || strpos($param, 'SELECT') === 0) {
