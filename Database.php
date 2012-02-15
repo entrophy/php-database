@@ -10,8 +10,14 @@ class Entrophy_Database {
 	private $rows;
 	private $totalRows;
 	
-	private $pdo;
 	private $statement;
+	
+	/**
+	 * $master, $write & $read are all PDO objects
+	 */
+	private $master;
+	private $write;
+	private $read;
 	
 	private static $instance;
 	public static function getInstance() {
@@ -35,24 +41,47 @@ class Entrophy_Database {
 	private function __construct() {}
 
 	public function __destruct() {
-		$this->pdo = null;
+		$this->master = null;
+		$this->write = null;
+		$this->read = null;
 		$this->statement = null;
 	}
 
 	public function init($config) {
 		$this->config = is_array($config) ? (object) $config : $config;
-		$this->prefix = $this->config->prefix;
-
-		$this->pdo = new PDO(
-			'mysql:host='.$this->config->host.';dbname='.$this->config->database.';',
-			$this->config->user,
-			$this->config->password,
+		$master = $this->config->master ? (object) $this->config->master : $this->config;
+		
+		$this->master = new PDO(
+			'mysql:host='.$master->host.';dbname='.$master->database.';',
+			$master->user,
+			$master->password,
 			array(
-				PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES '.$this->config->charset
+				PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES '.$master->charset
 			)
 		);
-
-		$this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		$this->master->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		$this->write = $this->master;
+		
+		if ($this->config->read || $this->config->{'read-replicas'}) {
+			$read = $this->config->read ? : $this->config->{'read-replicas'};
+			if (is_array($read[0])) {
+				$read = $read[array_rand($read)];
+			}
+			$read = (object) $read;
+			
+			$this->read = new PDO(
+				'mysql:host='.$read->host.';dbname='.$read->database.';',
+				$read->user,
+				$read->password,
+				array(
+					PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES '.$read->charset
+				)
+			);
+			$this->read->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		} else {
+			$this->read = $this->master;
+		}
+		
 		unset($this->config);
 	}
 	
@@ -124,10 +153,18 @@ class Entrophy_Database {
 		return $value;
 	}
 	
-	public function prepare($query) {
-		$this->statement = $this->pdo->prepare($query);
-		
+	public function getType($param) {;
+		if ($param == 'read' || $param == 'SELECT' || strpos($param, 'SELECT') === 0) {
+			return 'read';
+		}
+		return 'write';
+	}
+	
+	public function prepare($query, $type = null) {
+		$type = $type ? $this->getType($type) : $this->getType($query);
+		$this->statement = $this->{$type}->prepare($query);	
 		$this->lastQuery = $query;
+		return $this;
 	}
 
 	public function bind($data, $value = null) {
@@ -138,6 +175,7 @@ class Entrophy_Database {
 		} else if ($value !== null) {
 			$this->bind(array($data => $value));
 		}
+		return $this;
 	}
 	
 	public function query($query) {
@@ -148,16 +186,19 @@ class Entrophy_Database {
 		// Entrophy_Profiler::startQuery($query);	
 			$result = array();
 			try {
+				$type = $this->getType($type);
 				$this->statement->execute();
 
 				$this->rows = $this->statement->rowCount();
 				$this->totalRows = null;
-				$this->insertID = $this->pdo->lastInsertID();
+				if ($type == 'write') {
+					$this->insertID = $this->write->lastInsertID();
+				}
 
-				$result = ($type == 'SELECT') ? $this->statement->fetchAll(PDO::FETCH_ASSOC) : array();
+				$result = ($type == 'read') ? $this->statement->fetchAll(PDO::FETCH_ASSOC) : array();
 				
 				if (strstr($this->lastQuery, 'LIMIT')) {
-					$_statement = $this->pdo->prepare('SELECT FOUND_ROWS() as rows');
+					$_statement = $this->read->prepare('SELECT FOUND_ROWS() as rows');
 					$_statement->execute();
 
 					$_result = $_statement->fetchAll(PDO::FETCH_ASSOC);
