@@ -1,5 +1,4 @@
 <?php
-#include_once 'Database/CRUD.php'; /* is inherited */
 class Entrophy_Database {
 	private $config;
 	private $prefix;
@@ -96,7 +95,7 @@ class Entrophy_Database {
 		return $this->queryBuilder();
 	}
 	public function crud() {
-		return Entrophy_Database_Crud::getInstance();
+		return Entrophy_Database_CRUD::getInstance();
 	}
 	
 	public function insertID() {
