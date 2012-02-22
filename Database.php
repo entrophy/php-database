@@ -1,5 +1,6 @@
 <?php
 spl_autoload_register(array('Entrophy_Database', 'autoload'), true, true);
+include_once 'Database/CRUD.php'; /* weird bug with autoloading crud */
 class Entrophy_Database {
 	private $config;
 	private $prefix;
