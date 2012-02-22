@@ -1,6 +1,5 @@
 <?php
-spl_autoload_register(array('Entrophy_Database', 'autoload'), true, true);
-include_once 'Database/CRUD.php'; /* weird bug with autoloading crud */
+#include_once 'Database/CRUD.php'; /* is inherited */
 class Entrophy_Database {
 	private $config;
 	private $prefix;
@@ -42,10 +41,10 @@ class Entrophy_Database {
 	private function __construct() {}
 
 	public function __destruct() {
-		$this->master = null;
+		/*$this->master = null;
 		$this->write = null;
 		$this->read = null;
-		$this->statement = null;
+		$this->statement = null;*/
 	}
 
 	public function init($config) {
@@ -97,7 +96,7 @@ class Entrophy_Database {
 		return $this->queryBuilder();
 	}
 	public function crud() {
-		return Entrophy_Database_CRUD::getInstance();
+		return Entrophy_Database_Crud::getInstance();
 	}
 	
 	public function insertID() {
@@ -219,4 +218,5 @@ class Entrophy_Database {
 		return $result;
 	}
 }
+spl_autoload_register(array('Entrophy_Database', 'autoload'), true, true);
 ?>
