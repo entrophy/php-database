@@ -1,5 +1,4 @@
 <?php
-spl_autoload_register(array('Entrophy_Database', 'autoload'), true, true);
 class Entrophy_Database {
 	private $config;
 	private $prefix;
@@ -41,10 +40,10 @@ class Entrophy_Database {
 	private function __construct() {}
 
 	public function __destruct() {
-		$this->master = null;
+		/*$this->master = null;
 		$this->write = null;
 		$this->read = null;
-		$this->statement = null;
+		$this->statement = null;*/
 	}
 
 	public function init($config) {
@@ -218,4 +217,5 @@ class Entrophy_Database {
 		return $result;
 	}
 }
+spl_autoload_register(array('Entrophy_Database', 'autoload'), true, true);
 ?>
