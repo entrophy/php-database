@@ -102,6 +102,12 @@ class Entrophy_Database_QueryBuilder {
 		return $this;
 	}
 
+	public function setOrder($name, $dir = 'asc', $key = null) {
+		$this->orders = array();
+		$this->addOrder($name, $dir, $key);
+
+		return $this;
+	}
 	public function addOrder($name, $dir = 'asc', $key = null) {	
 		$order = (object) array('name' => $name, 'dir' => $dir);
 		if ($key) {
@@ -279,14 +285,12 @@ class Entrophy_Database_QueryBuilder {
 			usort($conditions, array($this, 'sortConditions'));
 			// turn conditions array into a forced nested array to support array of conditions in setCondition()
 			$conditions = array_map(function ($condition) {
-				return is_array($condition[0]) ? $condition[0] : array($condition[0]);
+				$condition =  is_array($condition[0]) ? $condition[0] : array($condition[0]);
+				return '('.implode(') AND (', $condition).')';
 			}, $conditions);
 			
 			$query_parts[] = 'WHERE';
-		
-			foreach ($conditions as $condition_set) {
-				$query_parts[] = '('.implode(') AND (', $condition_set).')';
-			}
+			$query_parts[] = '('.implode(') AND (', $conditions).')';
 			unset($conditions);
 		}
 
